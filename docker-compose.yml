@@ -1,0 +1,50 @@
+version: "3.1"
+
+name: ssi-agent
+
+services:
+  cqrs-postgres-db:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: demo
+      POSTGRES_USER: demo_user
+      POSTGRES_PASSWORD: demo_pass
+      POSTGRES_LOGGING: true
+      POSTGRES_LOG_STATEMENT: 'all'
+      POSTGRES_LOG_CONNECTIONS: 'on'
+      POSTGRES_LOG_DISCONNECTIONS: 'on'
+    volumes:
+      - "/var/lib/docker-volumes/ssi-agent/db:/docker-entrypoint-initdb.d"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-h", "localhost", "-U", "demo_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ssi-agent:
+    image: ghcr.io/educredentials/ssi-agent:latest
+    ports:
+      - 3033:3033
+    depends_on:
+      cqrs-postgres-db:
+        condition: service_healthy
+    links:
+      - cqrs-postgres-db
+
+    environment:
+      AGENT_CONFIG_EVENT_STORE: postgres
+      AGENT_CONFIG_URL: "https://poc3.eduwallet.nl"
+
+      AGENT_STORE_DB_CONNECTION_STRING: postgresql://demo_user:demo_pass@cqrs-postgres-db:5432/demo
+      AGENT_SECRET_MANAGER_STRONGHOLD_PATH: /app/res/stronghold
+
+      AGENT_CONFIG_STRONGHOLD_PASSWORD: "VNvRtH4tKyWwvJDpL6Vuc2aoLiKAecGQ"
+      AGENT_CONFIG_ISSUER_KEY_ID: "UVDxWhG2rB39FkaR7I27mHeUNrGtUgcr"
+    volumes:
+      - /var/lib/docker-volumes/ssi-agent/stronghold:/app/res/stronghold
+      # TODO: Remove this. This is a workaround that ensures that the `agent_verification/presentation_definitions`
+      # folder can be accessed by the agent from the `fn authorization_requests` endpoint.
+      - /tmp/ssi-agent/:/app/agent_api_rest
