@@ -1,6 +1,6 @@
 # Eduwallet integration
 
-The configuration and tools to bind several services together in one.
+The configuration and tools to bind several services together in one running system.
 
 So that we can:
 - refer to one commit/tag for a specific deployment or build
