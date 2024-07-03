@@ -18,19 +18,11 @@ services:
       POSTGRES_LOG_DISCONNECTIONS: 'on'
     volumes:
       - "/var/lib/docker-volumes/ssi-agent/db:/docker-entrypoint-initdb.d"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-h", "localhost", "-U", "demo_user"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   ssi-agent:
     image: ghcr.io/educredentials/ssi-agent:latest
     ports:
       - 3033:3033
-    depends_on:
-      cqrs-postgres-db:
-        condition: service_healthy
     links:
       - cqrs-postgres-db
 
