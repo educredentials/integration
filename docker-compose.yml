@@ -13,7 +13,7 @@ services:
       POSTGRES_USER: demo_user
       POSTGRES_PASSWORD: demo_pass
     volumes:
-      - "/var/lib/docker-volumes/ssi-agent/db:/docker-entrypoint-initdb.d"
+      - "${DB_VOLUME_PATH:-/var/lib/docker-volumes/ssi-agent/db}:/docker-entrypoint-initdb.d"
 
   ssi-agent:
     image: ghcr.io/educredentials/ssi-agent:latest
@@ -32,7 +32,7 @@ services:
       AGENT_CONFIG_STRONGHOLD_PASSWORD: "VNvRtH4tKyWwvJDpL6Vuc2aoLiKAecGQ"
       AGENT_CONFIG_ISSUER_KEY_ID: "UVDxWhG2rB39FkaR7I27mHeUNrGtUgcr"
     volumes:
-      - /var/lib/docker-volumes/ssi-agent/stronghold:/app/res/stronghold
+      - "${STRONGHOLD_PATH:-/var/lib/docker-volumes/ssi-agent/stronghold}:/app/res/stronghold"
       # TODO: Remove this. This is a workaround that ensures that the `agent_verification/presentation_definitions`
       # folder can be accessed by the agent from the `fn authorization_requests` endpoint.
       - /tmp/ssi-agent/:/app/agent_api_rest
